@@ -35,11 +35,17 @@ curl -L -o imgui.zip "https://github.com/ocornut/imgui/archive/refs/tags/${VERSI
 echo "Extracting files..."
 unzip -q imgui.zip
 
-# Find the extracted directory
-IMGUI_DIR=$(ls -d imgui-*/ | head -n 1)
+# Find the extracted directory (more robust than ls)
+IMGUI_DIR=$(find . -maxdepth 1 -type d -name "imgui-*" | head -n 1)
+if [ -z "$IMGUI_DIR" ]; then
+    echo "Error: Could not find extracted imgui directory"
+    exit 1
+fi
+IMGUI_DIR="${IMGUI_DIR}/"
 
 echo "Removing old ImGui files..."
-rm -f *.cpp *.h
+find . -maxdepth 1 -name "*.cpp" -type f -delete
+find . -maxdepth 1 -name "*.h" -type f -delete
 rm -rf misc/
 
 echo "Copying core source files..."
