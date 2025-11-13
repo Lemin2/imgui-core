@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      releases: write
 
     steps:
       - name: Checkout repository
@@ -100,9 +101,30 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit and push changes
+        id: commit_push
         if: steps.get_release.outputs.skip == 'false'
         run: |
           VERSION=${{ steps.get_release.outputs.version }}
           git add .
-          git commit -m "Update ImGui to $VERSION" || exit 0
-          git push
+          # If there are no changes, exit 0 to avoid failing the job
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update ImGui to $VERSION"
+            git push
+          fi
+          # Expose the current HEAD sha for the release target
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        if: steps.get_release.outputs.skip == 'false'
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.get_release.outputs.version }}
+          release_name: ${{ steps.get_release.outputs.version }}
+          body: "Mirror of ocornut/imgui release ${{ steps.get_release.outputs.version }}"
+          target_commitish: ${{ steps.commit_push.outputs.sha }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
