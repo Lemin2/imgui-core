@@ -40,6 +40,17 @@ dependencies:
     git: https://github.com/Lemin2/imgui-core.git
 ```
 
+要使用特定版本，可以指定版本标签：
+
+To use a specific version, you can specify a version tag:
+
+```yaml
+dependencies:
+  imgui-core:
+    git: https://github.com/Lemin2/imgui-core.git
+    version: v1.92.4
+```
+
 ### 手动安装 / Manual Installation
 
 将此仓库克隆到项目的 `components` 目录：
@@ -67,9 +78,21 @@ You'll need to provide your own backend implementation for ESP32 (display and in
 
 ## 自动更新 / Automatic Updates
 
-此仓库每天自动检查新的 ImGui 版本并更新核心文件。你也可以通过 GitHub Actions 手动触发更新。
+此仓库每天自动检查新的 ImGui 版本并更新核心文件。当发现新版本时，自动化工作流会：
+1. 下载并更新源文件
+2. 提交更改
+3. 创建对应的 git 标签（如 `v1.92.4`）
+4. 创建 GitHub Release
 
-This repository automatically checks for new ImGui releases daily and updates the core files. You can also manually trigger an update via GitHub Actions.
+你也可以通过 GitHub Actions 手动触发更新。
+
+This repository automatically checks for new ImGui releases daily and updates the core files. When a new version is found, the automation workflow will:
+1. Download and update source files
+2. Commit the changes
+3. Create a corresponding git tag (e.g., `v1.92.4`)
+4. Create a GitHub Release
+
+You can also manually trigger an update via GitHub Actions.
 
 ### 手动更新 / Manual Update
 
