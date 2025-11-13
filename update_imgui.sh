@@ -58,6 +58,12 @@ cp -r "${IMGUI_DIR}misc" . 2>/dev/null || true
 echo "Saving version info..."
 echo "$VERSION" > IMGUI_VERSION
 
+echo "Updating idf_component.yml version..."
+# Extract version number (remove 'v' prefix)
+VERSION_NUM="${VERSION#v}"
+echo "Setting version to $VERSION_NUM"
+sed -i "s/^version: .*/version: \"$VERSION_NUM\"/" idf_component.yml
+
 echo "Cleaning up..."
 rm -rf imgui.zip imgui-*/
 
