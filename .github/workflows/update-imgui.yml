@@ -1,0 +1,95 @@
+name: Update ImGui Core
+
+on:
+  schedule:
+    # Check for new releases daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'ImGui version to fetch (e.g., v1.90.0). Leave empty for latest release.'
+        required: false
+        default: ''
+
+jobs:
+  update-imgui:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Get latest ImGui release
+        id: get_release
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            IMGUI_VERSION="${{ github.event.inputs.version }}"
+            echo "Using manually specified version: $IMGUI_VERSION"
+          else
+            IMGUI_VERSION=$(curl -s https://api.github.com/repos/ocornut/imgui/releases/latest | grep '"tag_name"' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')
+            echo "Latest ImGui version: $IMGUI_VERSION"
+          fi
+          echo "version=$IMGUI_VERSION" >> $GITHUB_OUTPUT
+          
+          # Check if this version is already applied
+          if [ -f "IMGUI_VERSION" ]; then
+            CURRENT_VERSION=$(cat IMGUI_VERSION)
+            if [ "$CURRENT_VERSION" = "$IMGUI_VERSION" ]; then
+              echo "Already up to date with version $IMGUI_VERSION"
+              echo "skip=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+      
+      - name: Download and extract ImGui
+        if: steps.get_release.outputs.skip == 'false'
+        run: |
+          VERSION=${{ steps.get_release.outputs.version }}
+          echo "Downloading ImGui $VERSION"
+          
+          # Download the release
+          curl -L -o imgui.zip "https://github.com/ocornut/imgui/archive/refs/tags/${VERSION}.zip"
+          
+          # Extract to temporary directory
+          unzip -q imgui.zip
+          
+          # Find the extracted directory
+          IMGUI_DIR=$(ls -d imgui-*/ | head -n 1)
+          
+          # Remove old imgui files if they exist (but keep our component files)
+          rm -f *.cpp *.h
+          rm -rf misc/
+          
+          # Copy core source files
+          cp "${IMGUI_DIR}"*.cpp . 2>/dev/null || true
+          cp "${IMGUI_DIR}"*.h . 2>/dev/null || true
+          
+          # Copy misc folder
+          cp -r "${IMGUI_DIR}misc" . 2>/dev/null || true
+          
+          # Save version info
+          echo "$VERSION" > IMGUI_VERSION
+          
+          # Cleanup
+          rm -rf imgui.zip imgui-*/
+          
+          echo "ImGui $VERSION files extracted successfully"
+      
+      - name: Configure Git
+        if: steps.get_release.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Commit and push changes
+        if: steps.get_release.outputs.skip == 'false'
+        run: |
+          VERSION=${{ steps.get_release.outputs.version }}
+          git add .
+          git commit -m "Update ImGui to $VERSION" || exit 0
+          git push
