@@ -17,13 +17,4 @@ targets:
   - esp32c6
   - esp32h2
 
-maintainers:
-  - name: "Lemin2"
-
-tags:
-  - gui
-  - imgui
-  - graphics
-  - ui
-
 license: "MIT"
