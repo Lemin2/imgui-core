@@ -88,6 +88,12 @@ jobs:
           # Save version info
           echo "$VERSION" > IMGUI_VERSION
 
+          # Update idf_component.yml version
+          # Extract version number (remove 'v' prefix)
+          VERSION_NUM="${VERSION#v}"
+          echo "Updating idf_component.yml version to $VERSION_NUM"
+          sed -i "s/^version: .*/version: \"$VERSION_NUM\"/" idf_component.yml
+
           # Cleanup
           rm -rf imgui.zip imgui-*/
 
