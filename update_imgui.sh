@@ -56,11 +56,11 @@ echo "Copying misc folder..."
 cp -r "${IMGUI_DIR}misc" . 2>/dev/null || true
 
 echo "Saving version info..."
-echo "$VERSION" > IMGUI_VERSION
+# Remove 'v' prefix from version before saving
+VERSION_NUM="${VERSION#v}"
+echo "$VERSION_NUM" > IMGUI_VERSION
 
 echo "Updating idf_component.yml version..."
-# Extract version number (remove 'v' prefix)
-VERSION_NUM="${VERSION#v}"
 echo "Setting version to $VERSION_NUM"
 sed -i "s/^version: .*/version: \"$VERSION_NUM\"/" idf_component.yml
 
@@ -76,7 +76,7 @@ echo "  - Misc utilities: misc/"
 echo ""
 echo "Next steps:"
 echo "  1. Review the changes: git status"
-echo "  2. Commit the changes: git add . && git commit -m 'Update ImGui to $VERSION'"
+echo "  2. Commit the changes: git add . && git commit -m 'Update ImGui to $VERSION_NUM'"
 echo "  3. Push the changes: git push"
-echo "  4. Create and push git tag: git tag -a '$VERSION' -m 'ImGui $VERSION' && git push origin '$VERSION'"
+echo "  4. Create and push git tag: git tag -a '$VERSION_NUM' -m 'ImGui $VERSION_NUM' && git push origin '$VERSION_NUM'"
 echo "  5. (Optional) Create GitHub release via GitHub UI or gh CLI"
