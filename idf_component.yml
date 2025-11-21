@@ -1,5 +1,5 @@
 name: "imgui-core"
-version: "1.92.4"
+version: "1.92.5"
 description: "Dear ImGui: Bloat-free Graphical User interface for C++ with minimal dependencies - Core files only for ESP-IDF"
 url: "https://github.com/Lemin2/imgui-core"
 documentation: "https://github.com/ocornut/imgui"
